@@ -1016,7 +1016,12 @@ def render_cells(t, dt):
 
     img = bloom(img)
     img = 1 - np.exp(-2.0 * np.clip(img, 0, None))
-    img *= _rgb3((1 - 0.30 * ss(0.4, 1.0, RS)) * ease(t / 1.2))
+    # fade in at the start of the loop and out just before the loop point, so
+    # the restart (the lids are already closed there) is invisible
+    fade = ease(t / 1.2)
+    if FX["loop"]:
+        fade *= 1.0 - ease((t - (T_LOOP - 0.6)) / 0.6)
+    img *= _rgb3((1 - 0.30 * ss(0.4, 1.0, RS)) * fade)
 
     cells = _downsample(img)
     lum = 0.30 * cells[..., 0] + 0.60 * cells[..., 1] + 0.10 * cells[..., 2]
